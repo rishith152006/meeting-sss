@@ -1,7 +1,6 @@
 Flask==3.0.2
 Flask-Cors==4.0.0
 numpy==1.26.4
-torchaudio==2.2.1
 git+https://github.com/openai/whisper.git
 speechbrain==0.5.16
 scikit-learn==1.4.1.post1
