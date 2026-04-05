@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content="Sign in or create your MeetScribe account"/>
+<title>🎙️ MeetScribe — Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #030712;
+    --surface: #0f172a;
+    --card:    #111827;
+    --border:  #1f2937;
+    --text:    #f1f5f9;
+    --muted:   #6b7280;
+    --blue:    #3b82f6;
+    --blue2:   #60a5fa;
+    --purple:  #8b5cf6;
+    --green:   #10b981;
+    --red:     #ef4444;
+    --yellow:  #f59e0b;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── Background orbs ── */
+  .orb {
+    position: fixed; border-radius: 50%;
+    filter: blur(100px); opacity: 0.1; pointer-events: none;
+    animation: drift 20s ease-in-out infinite alternate;
+  }
+  .orb-1 { width: 500px; height: 500px; background: #3b82f6; top: -150px; left: -150px; animation-duration: 22s; }
+  .orb-2 { width: 400px; height: 400px; background: #8b5cf6; bottom:-120px; right:-120px; animation-duration: 18s; animation-delay:-5s; }
+  @keyframes drift {
+    from { transform: translate(0,0) scale(1); }
+    to   { transform: translate(45px,30px) scale(1.1); }
+  }
+
+  /* ── Back link ── */
+  .back-link {
+    position: fixed; top: 22px; left: 28px;
+    display: flex; align-items: center; gap: 6px;
+    color: var(--muted); font-size: 0.84em; text-decoration: none;
+    transition: color 0.2s; z-index: 10;
+  }
+  .back-link:hover { color: var(--text); }
+
+  /* ── Card ── */
+  .card {
+    position: relative; width: 100%; max-width: 440px;
+    background: rgba(17,24,39,0.9);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 22px;
+    padding: 38px 36px 34px;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.5);
+    z-index: 1;
+    margin: 16px;
+  }
+
+  /* ── Logo ── */
+  .logo {
+    text-align: center; margin-bottom: 30px;
+  }
+  .logo-icon { font-size: 2.6em; display: block; margin-bottom: 10px; }
+  .logo h1 {
+    font-size: 1.25em; font-weight: 800; letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .logo p { font-size: 0.8em; color: var(--muted); margin-top: 4px; }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex; background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 4px; margin-bottom: 28px; gap: 4px;
+  }
+  .tab-btn {
+    flex: 1; padding: 9px 8px;
+    border: none; border-radius: 9px;
+    background: transparent; color: var(--muted);
+    font-size: 0.86em; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+  .tab-btn.active {
+    background: rgba(59,130,246,0.15);
+    color: var(--blue2);
+    box-shadow: 0 0 0 1px rgba(59,130,246,0.3);
+  }
+
+  /* ── Form ── */
+  .field { margin-bottom: 16px; position: relative; }
+  .field label {
+    display: block; font-size: 0.78em;
+    color: var(--muted); margin-bottom: 6px; font-weight: 500;
+  }
+  .field input[type=email],
+  .field input[type=password] {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text); border-radius: 10px;
+    padding: 11px 40px 11px 14px;
+    font-size: 0.9em; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+  .field input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+  }
+  .eye-btn {
+    position: absolute; right: 12px; bottom: 12px;
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); font-size: 1em; padding: 0; line-height: 1;
+  }
+  .eye-btn:hover { color: var(--text); }
+
+  /* ── Hints ── */
+  .field-hint { font-size: 0.74em; color: var(--muted); margin-top: 5px; }
+
+  /* ── Password requirements ── */
+  .pwd-reqs {
+    font-size: 0.78em; margin: 4px 0 14px;
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .req { display: flex; align-items: center; gap: 7px; color: var(--muted); transition: color 0.2s; }
+  .req.ok { color: var(--green); }
+  .req-icon { font-style: normal; width: 14px; text-align: center; }
+
+  /* ── Strength bar ── */
+  .strength-wrap { margin-bottom: 16px; }
+  .strength-label { font-size: 0.76em; color: var(--muted); margin-bottom: 5px; display: flex; justify-content: space-between; }
+  .strength-label span { font-weight: 600; }
+  .strength-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  #pwd-bar { height: 100%; width: 0; border-radius: 3px; transition: width 0.35s, background 0.35s; }
+
+  /* ── Primary Button ── */
+  .btn-primary {
+    width: 100%; padding: 12px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    border: none; border-radius: 11px;
+    color: #fff; font-size: 0.94em; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    margin-top: 6px; font-family: 'Inter', sans-serif;
+    box-shadow: 0 4px 16px rgba(59,130,246,0.25);
+    position: relative; overflow: hidden;
+  }
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(59,130,246,0.35);
+  }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* ── Link Button ── */
+  .btn-link {
+    background: none; border: none;
+    color: var(--blue2); font-size: 0.83em;
+    cursor: pointer; padding: 0; text-decoration: underline;
+    text-underline-offset: 3px; font-family: 'Inter', sans-serif;
+  }
+  .btn-link:hover { color: #93c5fd; }
+
+  /* ── Alerts ── */
+  .alert {
+    padding: 11px 14px; border-radius: 10px;
+    font-size: 0.83em; margin-bottom: 18px;
+    display: none; line-height: 1.5;
+  }
+  .alert.show   { display: flex; align-items: flex-start; gap: 10px; }
+  .alert-icon   { font-size: 1em; flex-shrink: 0; margin-top: 1px; }
+  .alert.error  { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: #fca5a5; }
+  .alert.success{ background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); color: #6ee7b7; }
+  .alert.warn   { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); color: #fcd34d; }
+
+  /* ── Divider ── */
+  .divider { text-align: center; font-size: 0.8em; color: var(--muted); margin: 16px 0 4px; }
+
+  /* ── Spinner ── */
+  .spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+    vertical-align: middle; margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Panel fade ── */
+  .panel { animation: fadeIn 0.22s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+
+  @media (max-width: 480px) {
+    .card { padding: 28px 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<a href="/" class="back-link">← Back to home</a>
+
+<div class="card">
+
+  <!-- Logo -->
+  <div class="logo">
+    <span class="logo-icon">🎙️</span>
+    <h1>MeetScribe</h1>
+    <p>AI-powered transcription &amp; meeting summaries</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-login"    onclick="showTab('login')">Sign In</button>
+    <button class="tab-btn"        id="tab-register" onclick="showTab('register')">Create Account</button>
+  </div>
+
+  <!-- Alert -->
+  <div class="alert" id="alert-box">
+    <span class="alert-icon" id="alert-icon">⚠️</span>
+    <span id="alert-msg"></span>
+  </div>
+
+  <!-- ── LOGIN PANEL ── -->
+  <div id="panel-login" class="panel">
+    <div class="field">
+      <label for="login-email">Email Address</label>
+      <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email"
+             onkeydown="if(event.key==='Enter') doLogin()"/>
+    </div>
+    <div class="field">
+      <label for="login-password">Password</label>
+      <input type="password" id="login-password" placeholder="Your password"
+             autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()"/>
+      <button class="eye-btn" type="button" onclick="toggleEye('login-password', this)">👁</button>
+    </div>
+    <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In →</button>
+    <div class="divider">
+      New here? <button class="btn-link" onclick="showTab('register')">Create an account</button>
+    </div>
+  </div>
+
+  <!-- ── REGISTER PANEL ── -->
+  <div id="panel-register" class="panel" style="display:none">
+    <div class="field">
+      <label for="reg-email">Gmail Address</label>
+      <input type="email" id="reg-email" placeholder="you@gmail.com" autocomplete="email"
+             onkeydown="if(event.key==='Enter') document.getElementById('reg-password').focus()"/>
+      <div class="field-hint">Must be a valid email address (Gmail recommended)</div>
+    </div>
+    <div class="field">
+      <label for="reg-password">Create Password</label>
+      <input type="password" id="reg-password" placeholder="Min. 6 characters"
+             autocomplete="new-password"
+             oninput="checkStrength()"
+             onkeydown="if(event.key==='Enter') document.getElementById('reg-password2').focus()"/>
+      <button class="eye-btn" type="button" onclick="toggleEye('reg-password', this)">👁</button>
+    </div>
+
+    <!-- Strength bar -->
+    <div class="strength-wrap">
+      <div class="strength-label">
+        <span>Password Strength</span>
+        <span id="strength-label-text" style="color:var(--muted)">—</span>
+      </div>
+      <div class="strength-track"><div id="pwd-bar"></div></div>
+    </div>
+
+    <!-- Requirements -->
+    <div class="pwd-reqs">
+      <div class="req" id="r-len">   <i class="req-icon">○</i> At least 6 characters</div>
+      <div class="req" id="r-letter"><i class="req-icon">○</i> At least one letter (a–z)</div>
+      <div class="req" id="r-num">   <i class="req-icon">○</i> At least one number (0–9)</div>
+    </div>
+
+    <div class="field">
+      <label for="reg-password2">Confirm Password</label>
+      <input type="password" id="reg-password2" placeholder="Repeat password"
+             autocomplete="new-password"
+             onkeydown="if(event.key==='Enter') doRegister()"/>
+      <button class="eye-btn" type="button" onclick="toggleEye('reg-password2', this)">👁</button>
+    </div>
+
+    <button class="btn-primary" id="reg-btn" onclick="doRegister()">Create Account →</button>
+    <div class="divider">
+      Already registered? <button class="btn-link" onclick="showTab('login')">Sign in instead</button>
+    </div>
+  </div>
+
+</div><!-- /card -->
+
+<script>
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function showTab(tab) {
+  clearAlert();
+  const isLogin = tab === 'login';
+  document.getElementById('panel-login').style.display    = isLogin ? 'block' : 'none';
+  document.getElementById('panel-register').style.display = isLogin ? 'none'  : 'block';
+  document.getElementById('tab-login').classList.toggle('active',    isLogin);
+  document.getElementById('tab-register').classList.toggle('active', !isLogin);
+}
+
+// ── Alert helpers ─────────────────────────────────────────────────────────────
+const ICONS = { error: '❌', success: '✅', warn: '⚠️' };
+function showAlert(msg, type = 'error') {
+  const box  = document.getElementById('alert-box');
+  const icon = document.getElementById('alert-icon');
+  const text = document.getElementById('alert-msg');
+  icon.textContent = ICONS[type] || '⚠️';
+  text.textContent = msg;
+  box.className = `alert ${type} show`;
+}
+function clearAlert() {
+  document.getElementById('alert-box').className = 'alert';
+}
+
+// ── Eye toggle ────────────────────────────────────────────────────────────────
+function toggleEye(id, btn) {
+  const inp = document.getElementById(id);
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else                         { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+// ── Password strength ─────────────────────────────────────────────────────────
+function checkStrength() {
+  const pw = document.getElementById('reg-password').value;
+  const hasLen    = pw.length >= 6;
+  const hasLetter = /[A-Za-z]/.test(pw);
+  const hasNum    = /\d/.test(pw);
+  setReq('r-len',    hasLen);
+  setReq('r-letter', hasLetter);
+  setReq('r-num',    hasNum);
+
+  const score = [hasLen, hasLetter, hasNum, pw.length >= 10].filter(Boolean).length;
+  const bar   = document.getElementById('pwd-bar');
+  const lbl   = document.getElementById('strength-label-text');
+  const widths = ['0%','30%','60%','85%','100%'];
+  const colors = ['', '#ef4444', '#f59e0b', '#10b981', '#10b981'];
+  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+  bar.style.width      = widths[score];
+  bar.style.background = colors[score];
+  lbl.textContent      = labels[score];
+  lbl.style.color      = colors[score] || 'var(--muted)';
+}
+function setReq(id, ok) {
+  const el = document.getElementById(id);
+  el.className = 'req' + (ok ? ' ok' : '');
+  el.querySelector('.req-icon').textContent = ok ? '✓' : '○';
+}
+
+// ── Loading helper ────────────────────────────────────────────────────────────
+function setLoading(btnId, loading, origText) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.disabled = loading;
+  if (loading) {
+    btn._orig = btn.innerHTML;
+    btn.innerHTML = `<span class="spinner"></span> ${origText || btn._orig}`;
+  } else {
+    btn.innerHTML = btn._orig || btn.innerHTML;
+  }
+}
+
+// ── Login ─────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  clearAlert();
+  const email    = document.getElementById('login-email').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+
+  if (!email) { showAlert('Please enter your email address.'); return; }
+  if (!email.includes('@') || !email.includes('.')) { showAlert('Enter a valid email address.'); return; }
+  if (!password) { showAlert('Please enter your password.'); return; }
+
+  setLoading('login-btn', true, 'Signing In…');
+  try {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      showAlert(d.error || 'Login failed. Please check your credentials.');
+    } else {
+      showAlert('Welcome back! Redirecting…', 'success');
+      setTimeout(() => window.location.href = '/app', 1100);
+    }
+  } catch(e) {
+    showAlert('Network error — is the server running?');
+  } finally {
+    setLoading('login-btn', false);
+  }
+}
+
+// ── Register ──────────────────────────────────────────────────────────────────
+async function doRegister() {
+  clearAlert();
+  const email = document.getElementById('reg-email').value.trim().toLowerCase();
+  const pw    = document.getElementById('reg-password').value;
+  const pw2   = document.getElementById('reg-password2').value;
+
+  if (!email || !email.includes('@') || !email.includes('.')) {
+    showAlert('Please enter a valid email address.'); return;
+  }
+  if (pw.length < 6) { showAlert('Password must be at least 6 characters.'); return; }
+  if (!/[A-Za-z]/.test(pw)) { showAlert('Password must contain at least one letter.'); return; }
+  if (!/\d/.test(pw)) { showAlert('Password must contain at least one number.'); return; }
+  if (pw !== pw2) { showAlert('Passwords do not match.'); return; }
+
+  setLoading('reg-btn', true, 'Creating Account…');
+  try {
+    const r = await fetch('/api/auth/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pw }),
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      // Back-end returns "Email already registered" — show a clear message
+      if (d.error && d.error.toLowerCase().includes('already')) {
+        showAlert('An account with this email already exists. Please sign in instead.', 'warn');
+        setTimeout(() => showTab('login'), 2200);
+      } else {
+        showAlert(d.error || 'Registration failed.');
+      }
+    } else {
+      showAlert('Account created! Taking you in…', 'success');
+      setTimeout(() => window.location.href = '/app', 1200);
+    }
+  } catch(e) {
+    showAlert('Network error — is the server running?');
+  } finally {
+    setLoading('reg-btn', false);
+  }
+}
+
+// ── On load ───────────────────────────────────────────────────────────────────
+(async () => {
+  // Redirect if already logged in
+  try {
+    const r = await fetch('/api/auth/me');
+    const d = await r.json();
+    if (d.authenticated) { window.location.href = '/app'; return; }
+  } catch(e) {}
+
+  // Auto-switch to register tab if ?tab=register
+  const params = new URLSearchParams(location.search);
+  if (params.get('tab') === 'register') showTab('register');
+})();
+</script>
+</body>
+</html>

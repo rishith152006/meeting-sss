@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content="MeetScribe — AI-powered meeting transcription, speaker diarization, and summarization. Upload audio or record live."/>
+<title>🎙️ MeetScribe — AI Meeting Transcriber & Summarizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #030712;
+    --surface: #0f172a;
+    --border:  #1e293b;
+    --text:    #f1f5f9;
+    --muted:   #64748b;
+    --blue:    #3b82f6;
+    --blue2:   #60a5fa;
+    --purple:  #8b5cf6;
+    --green:   #10b981;
+    --pink:    #ec4899;
+    --cyan:    #06b6d4;
+    --orange:  #f97316;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Animated Background Orbs ── */
+  .bg-canvas {
+    position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+  }
+  .orb {
+    position: absolute; border-radius: 50%;
+    filter: blur(110px); opacity: 0.12;
+    animation: drift 22s ease-in-out infinite alternate;
+  }
+  .orb-1 { width: 650px; height: 650px; background: var(--blue);   top: -200px;  left: -200px;  animation-duration: 24s; }
+  .orb-2 { width: 550px; height: 550px; background: var(--purple); bottom:-150px; right: -150px; animation-duration: 20s; animation-delay:-6s; }
+  .orb-3 { width: 420px; height: 420px; background: var(--cyan);   top: 45%;     left: 50%;     animation-duration: 28s; animation-delay:-12s; }
+  .orb-4 { width: 320px; height: 320px; background: var(--pink);   top: 15%;     right: 15%;    animation-duration: 17s; animation-delay:-8s; }
+  @keyframes drift {
+    0%   { transform: translate(0,0) scale(1); }
+    100% { transform: translate(50px,35px) scale(1.12); }
+  }
+
+  /* ── Navigation ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    padding: 18px 52px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(3,7,18,0.75);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: padding 0.3s;
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 1.22em; font-weight: 800; letter-spacing: -0.5px;
+    text-decoration: none;
+  }
+  .logo-emoji { font-size: 1.3em; }
+  .logo-text {
+    background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .nav-links { display: flex; align-items: center; gap: 12px; }
+  .btn-ghost {
+    padding: 8px 22px;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 9px; background: transparent;
+    color: var(--text); font-size: 0.875em; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+    text-decoration: none; font-family: 'Inter', sans-serif;
+  }
+  .btn-ghost:hover { border-color: var(--blue2); color: var(--blue2); }
+  .btn-nav-cta {
+    padding: 8px 22px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    border: none; border-radius: 9px;
+    color: #fff; font-size: 0.875em; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    text-decoration: none; font-family: 'Inter', sans-serif;
+    box-shadow: 0 2px 12px rgba(59,130,246,0.25);
+  }
+  .btn-nav-cta:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,130,246,0.35); }
+
+  /* ── Hero Section ── */
+  .hero {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 130px 24px 80px;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 18px;
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 999px;
+    font-size: 0.82em; color: var(--blue2); font-weight: 500;
+    margin-bottom: 36px;
+    animation: fadeUp 0.5s ease both;
+  }
+  .badge-pulse {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--blue2);
+    animation: blink 1.8s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.4)} }
+
+  .hero h1 {
+    font-size: clamp(2.6em, 7vw, 5.2em);
+    font-weight: 900; letter-spacing: -3px;
+    line-height: 1.04; margin-bottom: 28px;
+    animation: fadeUp 0.6s 0.08s ease both;
+  }
+  .grad {
+    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 45%, #f472b6 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .hero-sub {
+    font-size: clamp(1em, 2.2vw, 1.22em);
+    color: var(--muted); max-width: 600px; line-height: 1.75;
+    margin-bottom: 44px;
+    animation: fadeUp 0.6s 0.16s ease both;
+  }
+
+  .hero-btns {
+    display: flex; gap: 14px; align-items: center;
+    animation: fadeUp 0.6s 0.24s ease both;
+  }
+  .btn-cta {
+    padding: 15px 40px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    border: none; border-radius: 13px;
+    color: #fff; font-size: 1.02em; font-weight: 700;
+    cursor: pointer; text-decoration: none; font-family: 'Inter', sans-serif;
+    transition: all 0.2s; letter-spacing: -0.3px;
+    box-shadow: 0 4px 24px rgba(59,130,246,0.3);
+  }
+  .btn-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(59,130,246,0.4); }
+  .btn-outline {
+    padding: 15px 40px; background: transparent;
+    border: 1px solid rgba(255,255,255,0.18); border-radius: 13px;
+    color: var(--text); font-size: 1.02em; font-weight: 600;
+    cursor: pointer; text-decoration: none; font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+  }
+  .btn-outline:hover { border-color: rgba(255,255,255,0.38); transform: translateY(-2px); }
+
+  /* ── Mockup Card ── */
+  .hero-mockup {
+    margin-top: 64px; width: 100%; max-width: 920px;
+    animation: fadeUp 0.7s 0.32s ease both;
+  }
+  .mockup-shell {
+    background: rgba(15,23,42,0.85);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 22px; padding: 22px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 40px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset;
+  }
+  .mockup-titlebar {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 20px; padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .m-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .m-red { background: #ff5f57; } .m-yel { background: #febc2e; } .m-grn { background: #28c840; }
+  .m-url {
+    margin-left: 10px; font-size: 0.75em; color: var(--muted);
+    background: rgba(255,255,255,0.05); border-radius: 6px;
+    padding: 4px 12px; flex: 1; max-width: 320px; text-align: center;
+  }
+  .mockup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .m-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px; padding: 22px; text-align: left;
+    transition: all 0.3s; cursor: default;
+  }
+  .m-card:hover { border-color: rgba(96,165,250,0.35); background: rgba(59,130,246,0.05); }
+  .m-card .m-icon { font-size: 2em; margin-bottom: 12px; }
+  .m-card h3 { font-size: 0.95em; font-weight: 700; margin-bottom: 6px; }
+  .m-card p  { font-size: 0.78em; color: var(--muted); line-height: 1.65; }
+  .m-bar {
+    height: 4px; border-radius: 2px; margin-top: 16px;
+    animation: barShimmer 2.2s ease-in-out infinite alternate;
+  }
+  .m-bar-blue   { background: linear-gradient(90deg, var(--blue), var(--purple)); }
+  .m-bar-pink   { background: linear-gradient(90deg, var(--pink), var(--purple)); }
+  @keyframes barShimmer { from{opacity:0.45} to{opacity:1} }
+
+  /* ── How It Works ── */
+  .section {
+    position: relative; z-index: 1;
+    padding: 100px 24px; text-align: center;
+  }
+  .sec-eyebrow {
+    display: inline-block; font-size: 0.78em; font-weight: 600;
+    color: var(--blue2); text-transform: uppercase; letter-spacing: 0.12em;
+    margin-bottom: 14px;
+  }
+  .sec-title {
+    font-size: clamp(1.9em, 4vw, 3.2em);
+    font-weight: 900; letter-spacing: -1.5px; margin-bottom: 14px;
+  }
+  .sec-sub {
+    font-size: 1.05em; color: var(--muted);
+    max-width: 520px; margin: 0 auto 56px; line-height: 1.75;
+  }
+
+  /* Steps */
+  .steps-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 0; max-width: 900px; margin: 0 auto;
+    position: relative;
+  }
+  .steps-row::before {
+    content: '';
+    position: absolute; top: 36px; left: 12.5%; right: 12.5%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--blue), var(--purple));
+    opacity: 0.25; pointer-events: none;
+  }
+  .step { padding: 20px 16px; }
+  .step-num {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4em; font-weight: 900;
+    margin: 0 auto 18px;
+    box-shadow: 0 6px 24px rgba(59,130,246,0.3);
+    position: relative; z-index: 1;
+  }
+  .step h4 { font-size: 0.95em; font-weight: 700; margin-bottom: 8px; }
+  .step p  { font-size: 0.8em; color: var(--muted); line-height: 1.65; }
+
+  /* ── Features Grid ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px; max-width: 1100px; margin: 0 auto;
+  }
+  .feat-card {
+    background: rgba(15,23,42,0.65);
+    border: 1px solid var(--border);
+    border-radius: 18px; padding: 28px;
+    text-align: left; position: relative; overflow: hidden;
+    transition: all 0.3s;
+  }
+  .feat-card::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(59,130,246,0.06), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .feat-card:hover { border-color: rgba(96,165,250,0.35); transform: translateY(-5px); box-shadow: 0 20px 50px rgba(0,0,0,0.35); }
+  .feat-card:hover::after { opacity: 1; }
+  .fi-wrap {
+    width: 54px; height: 54px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.55em; margin-bottom: 18px;
+    position: relative; z-index: 1;
+  }
+  .fi-blue   { background: rgba(59,130,246,0.15); }
+  .fi-purple { background: rgba(139,92,246,0.15); }
+  .fi-green  { background: rgba(16,185,129,0.15); }
+  .fi-pink   { background: rgba(236,72,153,0.15); }
+  .fi-cyan   { background: rgba(6,182,212,0.15); }
+  .fi-orange { background: rgba(249,115,22,0.15); }
+  .feat-card h3 { font-size: 1.05em; font-weight: 700; margin-bottom: 8px; position: relative; z-index: 1; }
+  .feat-card p  { font-size: 0.84em; color: var(--muted); line-height: 1.7; position: relative; z-index: 1; }
+
+  /* ── CTA Section ── */
+  .cta-box {
+    background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1));
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 26px; padding: 72px 32px;
+    max-width: 720px; margin: 0 auto;
+  }
+  .cta-box h2 {
+    font-size: clamp(1.9em, 4vw, 2.9em);
+    font-weight: 900; letter-spacing: -1.5px; margin-bottom: 16px;
+  }
+  .cta-box p { font-size: 1.06em; color: var(--muted); margin-bottom: 38px; line-height: 1.75; }
+  .cta-btn-wrap { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+  /* ── Footer ── */
+  footer {
+    position: relative; z-index: 1;
+    padding: 32px; text-align: center;
+    border-top: 1px solid var(--border);
+    font-size: 0.82em; color: var(--muted);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(26px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 14px 20px; }
+    .hero { padding: 110px 20px 60px; }
+    .hero-btns { flex-direction: column; gap: 10px; }
+    .mockup-grid { grid-template-columns: 1fr; }
+    .steps-row { grid-template-columns: repeat(2,1fr); }
+    .steps-row::before { display: none; }
+  }
+  @media (max-width: 480px) {
+    .steps-row { grid-template-columns: 1fr; }
+    .nav-links .btn-ghost { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-canvas">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+</div>
+
+<!-- ── Navigation ── -->
+<nav>
+  <a href="/" class="nav-logo">
+    <span class="logo-emoji">🎙️</span>
+    <span class="logo-text">MeetScribe</span>
+  </a>
+  <div class="nav-links">
+    <a href="/login" class="btn-ghost">Sign In</a>
+    <a href="/login?tab=register" class="btn-nav-cta">Get Started →</a>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="hero-badge">
+    <div class="badge-pulse"></div>
+    AI-Powered Meeting Intelligence — Powered by Whisper &amp; Groq
+  </div>
+
+  <h1>
+    Your meetings,<br>
+    <span class="grad">clearly understood</span>
+  </h1>
+
+  <p class="hero-sub">
+    Upload recorded audio or capture meetings live. MeetScribe transcribes, identifies every speaker, and generates a concise AI summary — automatically.
+  </p>
+
+  <div class="hero-btns">
+    <a href="/login?tab=register" class="btn-cta">Start for Free →</a>
+    <a href="/login" class="btn-outline">Sign In</a>
+  </div>
+
+  <div class="hero-mockup">
+    <div class="mockup-shell">
+      <div class="mockup-titlebar">
+        <div class="m-dot m-red"></div>
+        <div class="m-dot m-yel"></div>
+        <div class="m-dot m-grn"></div>
+        <div class="m-url">meetscribe.app — Meeting Transcriber</div>
+      </div>
+      <div class="mockup-grid">
+        <div class="m-card">
+          <div class="m-icon">🎵</div>
+          <h3>Upload Recorded Audio</h3>
+          <p>Drop any WAV, MP3, M4A, or FLAC file. Supports meetings up to hours long with multiple speakers.</p>
+          <div class="m-bar m-bar-blue" style="width:78%"></div>
+        </div>
+        <div class="m-card">
+          <div class="m-icon">🔴</div>
+          <h3>Live Recording</h3>
+          <p>Click record inside your browser — capture any live session and process it immediately after.</p>
+          <div class="m-bar m-bar-pink" style="width:62%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── How It Works ── -->
+<section class="section">
+  <span class="sec-eyebrow">How it works</span>
+  <h2 class="sec-title">Four steps to clarity</h2>
+  <p class="sec-sub">From raw audio to actionable meeting insights — in minutes, not hours.</p>
+
+  <div class="steps-row">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h4>Upload or Record</h4>
+      <p>Upload an existing audio file or start a real-time browser recording</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h4>AI Transcribes</h4>
+      <p>OpenAI Whisper converts your speech to text with word-level timestamps</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h4>Speakers Tagged</h4>
+      <p>Each turn is labelled with the correct speaker using deep speaker embeddings</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <h4>Summary Ready</h4>
+      <p>Groq LLaMA-3 distills everything into key points, decisions &amp; action items</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Features ── -->
+<section class="section" style="padding-top:0">
+  <span class="sec-eyebrow">What you get</span>
+  <h2 class="sec-title">Everything built in</h2>
+  <p class="sec-sub">No plugins, no third-party subscriptions — the complete pipeline runs on your server.</p>
+
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="fi-wrap fi-blue">🎙️</div>
+      <h3>Whisper Transcription</h3>
+      <p>OpenAI Whisper delivers highly accurate speech-to-text even with accents, background noise or overlapping speakers.</p>
+    </div>
+    <div class="feat-card">
+      <div class="fi-wrap fi-purple">👥</div>
+      <h3>Speaker Diarization</h3>
+      <p>ECAPA-TDNN speaker embeddings with K-means clustering automatically separates who said what.</p>
+    </div>
+    <div class="feat-card">
+      <div class="fi-wrap fi-green">🤖</div>
+      <h3>LLaMA-3 Summaries</h3>
+      <p>Groq-accelerated LLaMA-3 70B generates structured summaries with key points, decisions and action items.</p>
+    </div>
+    <div class="feat-card">
+      <div class="fi-wrap fi-pink">📧</div>
+      <h3>Email Delivery</h3>
+      <p>Summaries sent straight to your inbox — so you can share them with your team with one click.</p>
+    </div>
+    <div class="feat-card">
+      <div class="fi-wrap fi-cyan">💾</div>
+      <h3>Export Anywhere</h3>
+      <p>Download the transcript as TXT, summary as Markdown, or grab the full structured JSON dataset.</p>
+    </div>
+    <div class="feat-card">
+      <div class="fi-wrap fi-orange">🔒</div>
+      <h3>Secure Access</h3>
+      <p>Hashed passwords, server-side sessions and authenticated routes keep your transcripts private.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="section">
+  <div class="cta-box">
+    <h2>Ready to transform your meetings?</h2>
+    <p>Create your free account and start transcribing in under a minute. No credit card required.</p>
+    <div class="cta-btn-wrap">
+      <a href="/login?tab=register" class="btn-cta" style="font-size:1.05em;padding:16px 52px">Create Free Account →</a>
+      <a href="/login" class="btn-outline" style="font-size:1.05em;padding:16px 52px">Sign In</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>🎙️ <strong>MeetScribe</strong> — AI-Powered Meeting Transcriber &amp; Summarizer &nbsp;·&nbsp; Built with Flask · Whisper · Groq LLaMA-3</p>
+</footer>
+
+<script>
+// If user is already logged in, redirect straight to /app
+(async () => {
+  try {
+    const r = await fetch('/api/auth/me');
+    const d = await r.json();
+    if (d.authenticated) window.location.href = '/app';
+  } catch(e) { /* stay on landing */ }
+})();
+
+// Handle ?tab=register auto-navigation
+const params = new URLSearchParams(location.search);
+if (params.get('tab') === 'register') {
+  // If loaded with a parameter accidentally, redirect
+  window.location.href = '/login?tab=register';
+}
+
+// User requested 3-second delay before leaving the introduction page
+document.querySelectorAll('a[href^="/login"]').forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    const href = this.getAttribute('href');
+    
+    // Visual feedback on the button
+    this.innerHTML = '<span style="opacity:0.8">Taking you there...</span>';
+    this.style.pointerEvents = 'none';
+    
+    // Smooth fade out of the entire page
+    document.body.style.transition = 'opacity 3s cubic-bezier(0.4, 0, 0.2, 1)';
+    document.body.style.opacity = '0';
+    
+    // Wait exactly 3 seconds before navigating
+    setTimeout(() => {
+      window.location.href = href;
+    }, 3000);
+  });
+});
+</script>
+</body>
+</html>
